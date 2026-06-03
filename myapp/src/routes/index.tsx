@@ -1,14 +1,18 @@
 import { NavigationContainer } from '@react-navigation/native'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { PrivateRoutes } from './PrivateRoutes'
 import { PublicRoutes } from './PublicRoutes'
 import { SystemBars } from 'react-native-edge-to-edge'
 import { useAuthContext } from '@/context/auth.context'
+import { Loading } from '@/screens/Loading'
 
 const NavigationRoutes = () => {
+  const [loading, setLoading] = useState(true);
   const { token, user } = useAuthContext()
 
   const Routes = useCallback(() => {
+    if (loading) return <Loading />
+
     if (!user || !token) {
       return <PublicRoutes />
     } else {

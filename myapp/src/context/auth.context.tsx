@@ -10,6 +10,8 @@ import {
 
 import * as authService from '@/services/dt-money/auth-services'
 import { IUser } from "@/shared/interfaces/https/user-interface"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { IAuthenticateResponse } from "@/shared/interfaces/https/authenticate-response"
 
 type AuthContextType = {
   user: IUser | null;
@@ -17,6 +19,7 @@ type AuthContextType = {
   handleAuthenticate: (params: FormLoginParams) => Promise<void>;
   handleRegister: (params: FormRegisterParams) => Promise<void>;
   handleLogout: () => void;
+  restoreUserSession: () => Promise<string | null>;
 }
 
 export const AuthContext = createContext<AuthContextType>(
@@ -29,6 +32,8 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const handleAuthenticate = async (userData: FormLoginParams) => {
     const { user, token } = await authService.authenticate(userData)
+    await AsyncStorage.setItem("dt-money-user", JSON.stringify({user, token}))
+
     console.log(user, token)
     setUser(user)
     setToken(token)
@@ -38,6 +43,18 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const { token, user } = await authService.registerUser(formData);
     setUser(user)
     setToken(token)
+  }
+
+  const restoreUserSession = async () => {
+    const userData = await AsyncStorage.getItem('dt-money-user')
+
+    if (userData) {
+      const { token, user } = JSON.parse(userData) as IAuthenticateResponse
+      setToken(token)
+      setUser(user)
+    }
+
+    return userData
   }
 
   const handleLogout = () => { }
@@ -50,6 +67,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
         handleAuthenticate,
         handleRegister,
         handleLogout,
+        restoreUserSession
       }}
     >
       {children}
