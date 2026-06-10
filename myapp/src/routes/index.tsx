@@ -12,7 +12,7 @@ const NavigationRoutes = () => {
 
   const Routes = useCallback(() => {
     if (loading) return <Loading setLoading={setLoading} />
-
+    
     if (!user || !token) {
       return <PublicRoutes />
     } else {
